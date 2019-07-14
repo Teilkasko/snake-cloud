@@ -37,13 +37,6 @@ def initSocketIO (app, namespace):
     @sio.on('disconnect', namespace=namespace)
     async def disconnect(sid):
         print("disconnect", sid)
-        # await sio.disconnect(sid, namespace='/snake')
-
-    @sio.on('updates', namespace=namespace)
-    async def message(sid, data):
-        """Get message from client and reply with same message to it."""
-        #   print("updates", data, sid)
-        await sio.emit('updates', data=data, skip_sid=True, namespace=namespace)
 
     @sio.on('command', namespace=namespace)
     async def command(sid, data):
@@ -65,7 +58,6 @@ def main():
     app['socketIO'] = initSocketIO(app, namespace)
     app.on_shutdown.append(shutdown)
 
-    #start_background_scheduler()
     sched = AsyncIOScheduler()
     sched.add_job(updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 5)
     sched.start()

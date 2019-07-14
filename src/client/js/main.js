@@ -24,9 +24,9 @@ function initRx() {
     const namespace = '/snake';
     const socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
     const updates = rxFromIO(socket, 'updates');
-    updates.pipe(
-    	rxjs.operators.tap(event => console.log("UPDATES", event))
-    );
+	updates.subscribe(event => {
+		console.log("UPDATES", event);
+	})
 
     const connectForm = document.getElementById("connectForm");
     const connect = rxjs.fromEvent(connectForm, 'submit');
