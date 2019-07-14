@@ -1,8 +1,8 @@
 import logging
 import socketio
-import sched, time
 import arena
 from aiohttp import web
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 async def index(request):
     return web.FileResponse('../client/index.html')
@@ -13,25 +13,20 @@ def connect_command (arena, data):
     print("CONNECT COMMAND", arena, data)
 
 # -------------------------------------------------------------------
-'''
-def start_background_scheduler ():
-    scheduler = sched.scheduler(time.time, time.sleep)
-    def do_something(sc):
-        print("Doing stuff...")
-        # do your stuff
-        scheduler.enter(60, 1, do_something, (sc,))
 
-    scheduler.enter(60, 1, do_something, (scheduler,))
-    scheduler.run()
-'''
+def updateArena(sio, namespace, arena):
+    async def _updateArena():
+        print('emitting')
+        await sio.emit('updates', data='arena', skip_sid=True, namespace=namespace)
+    
+    return _updateArena
 
 async def shutdown(app):
     pass
 
 # -------------------------------------------------------------------
 
-def initSocketIO (app):
-    namespace = '/snake'
+def initSocketIO (app, namespace):
     sio = socketio.AsyncServer(async_mode='aiohttp')
     sio.attach(app)
 
@@ -51,7 +46,7 @@ def initSocketIO (app):
         await sio.emit('updates', data=data, skip_sid=True, namespace=namespace)
 
     @sio.on('command', namespace=namespace)
-    def my_event(sid, data):
+    async def command(sid, data):
         globals()[data['command'] + '_command'](app['arena'], data)
 
     return sio
@@ -59,17 +54,21 @@ def initSocketIO (app):
 # -------------------------------------------------------------------
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.ERROR)
+    namespace = '/snake'
 
     app = web.Application()
     app.router.add_get('/', index)
     app.router.add_static('/js', '../client/js')
 
     app['arena'] = arena.Arena()
-    app['socketIO'] = initSocketIO(app)
+    app['socketIO'] = initSocketIO(app, namespace)
     app.on_shutdown.append(shutdown)
 
     #start_background_scheduler()
+    sched = AsyncIOScheduler()
+    sched.add_job(updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 5)
+    sched.start()
     web.run_app(app)
 
 

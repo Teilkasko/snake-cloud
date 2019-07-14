@@ -9,3 +9,4 @@
 /tcl
 /venv
 /src/server/__pycache__
+.vscode/settings.json
