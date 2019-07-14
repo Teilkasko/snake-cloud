@@ -20,12 +20,12 @@ def connect(sid, environ):
 async def disconnect(sid):
     """Close socket connection for client with specified sid."""
     print('disconnect ', sid)
-    await sio.disconnect(sid, namespace='/snake')
+    #await sio.disconnect(sid, namespace='/snake')
 
 @sio.on('updates', namespace='/snake')
 async def message(sid, data):
     """Get message from client and reply with same message to it."""
-#   print("broadcast", data, sid)
+#   print("updates", data, sid)
     await sio.emit('updates', data=data, skip_sid=True, namespace='/snake')
 
 @sio.on('command', namespace='/snake')
