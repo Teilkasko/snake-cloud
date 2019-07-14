@@ -9,8 +9,8 @@ async def index(request):
 
 # -------------------------------------------------------------------
 
-def connect_command (data):
-    print("CONNECT COMMAND", data)
+def connect_command (arena, data):
+    print("CONNECT COMMAND", arena, data)
 
 # -------------------------------------------------------------------
 '''
@@ -37,12 +37,10 @@ def initSocketIO (app):
 
     @sio.on('connect', namespace=namespace)
     def connect(sid, environ):
-        """On connection event from client print to stdout the connect event and sid of client."""
         print("connect", sid)
 
     @sio.on('disconnect', namespace=namespace)
     async def disconnect(sid):
-        """Close socket connection for client with specified sid."""
         print("disconnect", sid)
         # await sio.disconnect(sid, namespace='/snake')
 
@@ -54,9 +52,7 @@ def initSocketIO (app):
 
     @sio.on('command', namespace=namespace)
     def my_event(sid, data):
-        """Get message from client and print to stdout."""
-        print("command", sid, data, app['arena'])
-        command = data['command']
+        globals()[data['command'] + '_command'](app['arena'], data)
 
     return sio
 
