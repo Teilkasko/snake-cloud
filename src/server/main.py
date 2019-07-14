@@ -1,7 +1,7 @@
-# Web Application that will handle websocket, with write received by Main.py calls, and values pushed to all web clients
-
 import logging
 import socketio
+import sched, time
+import arena
 from aiohttp import web
 
 sio = socketio.AsyncServer(async_mode='aiohttp')
@@ -32,6 +32,29 @@ async def message(sid, data):
 def my_event(sid, data):
     """Get message from client and print to stdout."""
     print("command", sid, data)
+    command = data['command']
+
+
+# -------------------------------------------------------------------
+
+def connect_command (data):
+    print("CONNECT COMMAND", data)
+
+# -------------------------------------------------------------------
+'''
+def start_background_scheduler ():
+    scheduler = sched.scheduler(time.time, time.sleep)
+    def do_something(sc):
+        print("Doing stuff...")
+        # do your stuff
+        scheduler.enter(60, 1, do_something, (sc,))
+
+    scheduler.enter(60, 1, do_something, (scheduler,))
+    scheduler.run()
+'''
+
+async def shutdown(app):
+    pass
 
 # -------------------------------------------------------------------
 
@@ -42,14 +65,12 @@ def main():
     app.router.add_get('/', index)
     app.router.add_static('/js', '../client/js')
 
+    app['arena'] = arena.Arena()
     sio.attach(app)
     app.on_shutdown.append(shutdown)
 
+    #start_background_scheduler()
     web.run_app(app)
-
-
-async def shutdown(app):
-    pass
 
 
 if __name__ == '__main__':

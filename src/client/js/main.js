@@ -1,7 +1,3 @@
-//import { Observable } from 'rxjs';
-//import { tap, map } from 'rxjs/operators';
-
-
 function rxFromIO (io, eventName) {
     return rxjs.Observable.create(observer => {
         io.on (eventName, (data) => {
@@ -13,15 +9,31 @@ function rxFromIO (io, eventName) {
     });
 }
 
+function connectionId (socket) {
+	return socket.id.split('#')[1];
+}
+
+function connectAsUser (socket, username) {
+	console.log("connect as user", username, connectionId(socket));
+	socket.emit('command', {'command':'connect', 'username':username});
+}
+
 function initRx() {
 	console.log("initRx");
 
-    let namespace = '/snake';
-    let socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-    let updates = rxFromIO(socket, 'updates');
+    const namespace = '/snake';
+    const socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+    const updates = rxFromIO(socket, 'updates');
     updates.pipe(
-    	rxjs.operators.tap(ev => console.log("UPDATES", ev))
+    	rxjs.operators.tap(event => console.log("UPDATES", event))
     );
+
+    const connectForm = document.getElementById("connectForm");
+    const connect = rxjs.fromEvent(connectForm, 'submit');
+    connect.subscribe(event => {
+		const username = document.getElementById("username").value;
+		connectAsUser(socket, username);
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function() {
