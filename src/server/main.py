@@ -55,6 +55,7 @@ def main():
     app = web.Application()
     app.router.add_get('/', index)
     app.router.add_static('/js', '../client/js')
+    app.router.add_static('/css', '../client/css')
 
     app['arena'] = arena.Arena(time.time())
     app['socketIO'] = initSocketIO(app, namespace)

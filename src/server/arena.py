@@ -9,13 +9,22 @@ class Arena:
         self.points = []
         self.obstacles = []
 
-    def addUser (self, id, username):
-        s = snake.Snake(id, username)
-        self.snakes.append(s)
+    def createNewSnake(self, id, username):
+        position = (0, 0)
+        length = 50
+        direction = 0
+        speed = 10
 
-    def update(self, referenceTimestamp):
-        print("updating arena")
-        self.timestamp = referenceTimestamp
+        newSnake = snake.Snake(id, username, position, length, direction, speed)
+        return newSnake
+
+    def addUser (self, id, username):
+        self.snakes.append(self.createNewSnake(id, username))
+
+    def update(self, newTimestamp):
+        elapsedTime = newTimestamp - self.timestamp
+        map(methodcaller('move', elapsedTime), self.snakes)
+        self.timestamp = newTimestamp
 
     def toJSON(self):
         return {

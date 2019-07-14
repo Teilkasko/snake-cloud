@@ -18,7 +18,7 @@ function connectAsUser (socket, username) {
 	socket.emit('command', {'command':'connect', 'username':username});
 }
 
-function initRx() {
+function initRx(canvas) {
 	console.log("initRx");
 
     const namespace = '/snake';
@@ -36,6 +36,37 @@ function initRx() {
     });
 }
 
+function initArena() {
+	console.log("initArena!");
+	var canvas = new fabric.StaticCanvas('arena', {
+		width: 400,
+		height: 400
+	});
+
+	var points = [];
+	var random = fabric.util.getRandomInt;
+
+	points.push(new fabric.Point(100,100));
+	points.push(new fabric.Point(200,200));
+	points.push(new fabric.Point(250,150));
+
+	console.log("POINTS", points)
+	var polyLine = new fabric.Polyline(points, {
+		stroke: 'black',
+		opacity: 0.25,
+//		stroke: new fabric.Color("rgba(1,20,100,0.5)"),
+		fill: '',
+		strokeWidth: 5,
+		strokeLineCap: 'round',
+		strokeLineJoin: 'round'
+	});
+	canvas.add(polyLine)
+
+	return canvas;
+
+}
+
 document.addEventListener("DOMContentLoaded", function() {
-	initRx();
+	var canvas = initArena();
+	initRx(canvas);
 });
