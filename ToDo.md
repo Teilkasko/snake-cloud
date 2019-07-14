@@ -1,7 +1,6 @@
 # ToDo
-- send commands from browser
-- manage state on the server
-- broadcast (update) state to all browsers
+- broadcast (update) state to all browsers after handling commands
+- remove snake when client disconnect
 
 
 # Fixme

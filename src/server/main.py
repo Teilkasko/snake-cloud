@@ -1,6 +1,7 @@
 import logging
 import socketio
 import arena
+import time
 from aiohttp import web
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -9,15 +10,15 @@ async def index(request):
 
 # -------------------------------------------------------------------
 
-def connect_command (arena, data):
-    print("CONNECT COMMAND", arena, data)
+async def connect_command (sid, arena, data):
+    arena.addUser(sid, data['username'])
 
 # -------------------------------------------------------------------
 
 def updateArena(sio, namespace, arena):
     async def _updateArena():
-        print('emitting')
-        await sio.emit('updates', data='arena', skip_sid=True, namespace=namespace)
+        arena.update(time.time())
+        await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
     
     return _updateArena
 
@@ -40,7 +41,8 @@ def initSocketIO (app, namespace):
 
     @sio.on('command', namespace=namespace)
     async def command(sid, data):
-        globals()[data['command'] + '_command'](app['arena'], data)
+        await globals()[data['command'] + '_command'](sid, app['arena'], data)
+        #await updateArena(sio, namespace, arena)
 
     return sio
 
@@ -54,7 +56,7 @@ def main():
     app.router.add_get('/', index)
     app.router.add_static('/js', '../client/js')
 
-    app['arena'] = arena.Arena()
+    app['arena'] = arena.Arena(time.time())
     app['socketIO'] = initSocketIO(app, namespace)
     app.on_shutdown.append(shutdown)
 
