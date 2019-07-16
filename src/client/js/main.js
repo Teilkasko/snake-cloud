@@ -54,7 +54,6 @@ function initArena() {
 	var polyLine = new fabric.Polyline(points, {
 		stroke: 'black',
 		opacity: 0.25,
-//		stroke: new fabric.Color("rgba(1,20,100,0.5)"),
 		fill: '',
 		strokeWidth: 5,
 		strokeLineCap: 'round',
