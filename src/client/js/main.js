@@ -18,6 +18,37 @@ function connectAsUser (socket, username) {
 	socket.emit('command', {'command':'connect', 'username':username});
 }
 
+function moveUserSnake(socket, keyEvent) {
+    console.log("pressed", keyEvent.key);
+    switch (keyEvent.key) {
+        case 'w': socket.emit('command', {'command':'snake_up'}); break;
+        case 'a': socket.emit('command', {'command':'snake_left'}); break;
+        case 's': socket.emit('command', {'command':'snake_down'}); break;
+        case 'd': socket.emit('command', {'command':'snake_right'}); break;
+        default:
+    }
+}
+
+function drawSnakes(canvas, snakes) {
+    width = canvas.width;
+    height = canvas.height;
+    snakes.forEach(s => {
+        var points = [];
+        s.points.forEach(p => points.push(new fabric.Point(p[0] + width / 2, p[1] + height / 2)))
+        points.push(new fabric.Point(s.position[0] + width / 2, s.position[1] + height / 2));
+        var polyLine = new fabric.Polyline(points, {
+            stroke: 'black',
+            opacity: 0.25,
+    //		stroke: new fabric.Color("rgba(1,20,100,0.5)"),
+            fill: '',
+            strokeWidth: 5,
+            strokeLineCap: 'round',
+            strokeLineJoin: 'round'
+        });
+        canvas.add(polyLine)
+    });
+}
+
 function initRx(canvas) {
 	console.log("initRx");
 
@@ -26,7 +57,11 @@ function initRx(canvas) {
     const updates = rxFromIO(socket, 'updates');
 	updates.subscribe(event => {
 		console.log("UPDATES", event);
-	})
+		canvas.getObjects().forEach(o => {
+		    canvas.remove(o);
+		});
+		drawSnakes(canvas, event.snakes);
+	});
 
     const connectForm = document.getElementById("connectForm");
     const connect = rxjs.fromEvent(connectForm, 'submit');
@@ -34,8 +69,15 @@ function initRx(canvas) {
 		const username = document.getElementById("username").value;
 		connectAsUser(socket, username);
     });
+
+    const ups = rxjs.fromEvent(document, 'keydown').pipe(rxjs.operators.debounceTime(100));
+    ups.subscribe(event => {
+        console.log("KeyPressed", event);
+        moveUserSnake(socket, event);
+    });
 }
 
+// (0,0) is upper left corner, positive axis right and down
 function initArena() {
 	console.log("initArena!");
 	var canvas = new fabric.StaticCanvas('arena', {
@@ -43,7 +85,7 @@ function initArena() {
 		height: 400
 	});
 
-	var points = [];
+/*	var points = [];
 	var random = fabric.util.getRandomInt;
 
 	points.push(new fabric.Point(100,100));
@@ -61,9 +103,8 @@ function initArena() {
 		strokeLineJoin: 'round'
 	});
 	canvas.add(polyLine)
-
+*/
 	return canvas;
-
 }
 
 document.addEventListener("DOMContentLoaded", function() {

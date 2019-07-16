@@ -13,6 +13,18 @@ async def index(request):
 async def connect_command (sid, arena, data):
     arena.addUser(sid, data['username'])
 
+async def snake_up_command(sid, arena, data):
+    arena.changeSnakeDirection(sid, 'up', time.time())
+
+async def snake_left_command(sid, arena, data):
+    arena.changeSnakeDirection(sid, 'left', time.time())
+
+async def snake_right_command(sid, arena, data):
+    arena.changeSnakeDirection(sid, 'right', time.time())
+
+async def snake_down_command(sid, arena, data):
+    arena.changeSnakeDirection(sid, 'down', time.time())
+
 # -------------------------------------------------------------------
 
 def updateArena(sio, namespace, arena):
@@ -62,7 +74,7 @@ def main():
     app.on_shutdown.append(shutdown)
 
     sched = AsyncIOScheduler()
-    sched.add_job(updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 5)
+    sched.add_job(updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 0.1)
     sched.start()
     web.run_app(app)
 

@@ -23,8 +23,13 @@ class Arena:
 
     def update(self, newTimestamp):
         elapsedTime = newTimestamp - self.timestamp
-        map(methodcaller('move', elapsedTime), self.snakes)
+        for s in self.snakes:
+            s.move(elapsedTime)
+        # map(methodcaller('move', elapsedTime), self.snakes)
         self.timestamp = newTimestamp
+
+    def changeSnakeDirection(self, id, direction, newTimestamp):
+        pass
 
     def toJSON(self):
         return {
