@@ -44,6 +44,7 @@ class Arena:
         elapsedTime = newTimestamp - self.timestamp
         for s in self.snakes:
             s.move(elapsedTime)
+            self.eatPoint(s.id, s.head())
         # map(methodcaller('move', elapsedTime), self.snakes)
         self.timestamp = newTimestamp
 
@@ -56,7 +57,7 @@ class Arena:
                 s.direction = s.direction - 10
         self.update(newTimestamp)
 
-    def eatPoint(self, id, point, newTimestamp):
+    def eatPoint(self, id, point):
         s = self.__getSnakeById__(id)
         p = self.__getPointByPosition__(point)
         if ((not s is None) and (not p is None)):
@@ -68,8 +69,6 @@ class Arena:
                 s.points[0][X] - ratio * (s.points[1][X] - s.points[0][X]),
                 s.points[0][Y] - ratio * (s.points[1][Y] - s.points[0][Y])
             )
-
-        self.update(newTimestamp)
 
     def toJSON(self):
         return {
@@ -87,6 +86,6 @@ class Arena:
 
     def __getPointByPosition__(self, point):
         for p in self.points:
-            if (point[X] == p[X] and point[Y] == p[Y]):
+            if (point[X] <=(p[X] + 2) and point[X] >= (p[X] - 2) and point[Y] <= (p[Y] + 2) and point[Y] >= (p[Y] - 2)):
                 return p
         return

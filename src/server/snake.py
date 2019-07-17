@@ -18,7 +18,6 @@ class Snake:
         self.speed = speed
         self.points = points
 
-
     def head (self):
         return self.points[-1]
 
