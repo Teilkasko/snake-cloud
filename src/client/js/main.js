@@ -35,7 +35,6 @@ function drawSnakes(canvas, snakes) {
     snakes.forEach(s => {
         var points = [];
         s.points.forEach(p => points.push(new fabric.Point(p[0] + width / 2, p[1] + height / 2)))
-        points.push(new fabric.Point(s.position[0] + width / 2, s.position[1] + height / 2));
         var polyLine = new fabric.Polyline(points, {
             stroke: 'black',
             opacity: 0.25,
@@ -96,7 +95,6 @@ function initArena() {
 	var polyLine = new fabric.Polyline(points, {
 		stroke: 'black',
 		opacity: 0.25,
-//		stroke: new fabric.Color("rgba(1,20,100,0.5)"),
 		fill: '',
 		strokeWidth: 5,
 		strokeLineCap: 'round',

@@ -1,4 +1,5 @@
 from operator import methodcaller
+import math
 import snake
 
 class Arena:
@@ -10,12 +11,16 @@ class Arena:
         self.obstacles = []
 
     def createNewSnake(self, id, username):
-        position = (0, 0)
         length = 50
         direction = 0
         speed = 10
 
-        newSnake = snake.Snake(id, username, position, length, direction, speed)
+        points = [
+            (- length * math.cos(math.radians(direction)), - length * math.sin(math.radians(direction))),
+            (0, 0)
+        ]
+
+        newSnake = snake.Snake(id, username, points, direction, speed)
         return newSnake
 
     def addUser (self, id, username):
