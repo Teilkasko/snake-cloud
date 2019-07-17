@@ -34,7 +34,7 @@ function drawSnakes(canvas, snakes) {
     height = canvas.height;
     snakes.forEach(s => {
         var points = [];
-        s.points.forEach(p => points.push(new fabric.Point(p[0] + width / 2, p[1] + height / 2)))
+        s.points.forEach(p => points.push(new fabric.Point(p[0], p[1])))
         var polyLine = new fabric.Polyline(points, {
             stroke: 'black',
             opacity: 0.25,
@@ -45,6 +45,20 @@ function drawSnakes(canvas, snakes) {
             strokeLineJoin: 'round'
         });
         canvas.add(polyLine)
+    });
+}
+
+function drawPoints(canvas, points) {
+    const width = canvas.width;
+    const height = canvas.height;
+    points.forEach(p => {
+        var circle = new fabric.Circle({
+            fill: 'red',
+            radius: 1,
+            left: p[0],
+            top: p[1]
+        });
+        canvas.add(circle)
     });
 }
 
@@ -59,7 +73,10 @@ function initRx(canvas) {
 		canvas.getObjects().forEach(o => {
 		    canvas.remove(o);
 		});
-		drawSnakes(canvas, event.snakes);
+		const ctx = canvas.getContext('2d');
+		ctx.clearRect(0, 0, ctx.width, ctx.height);
+	    drawSnakes(canvas, event.snakes);
+		drawPoints(canvas, event.points);
 	});
 
     const connectForm = document.getElementById("connectForm");
