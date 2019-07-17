@@ -6,6 +6,7 @@ import snake
 X = 0
 Y = 1
 PointLength = 5
+NumberOfPoints = 50
 
 class Arena:
 
@@ -15,7 +16,7 @@ class Arena:
         self.timestamp = referenceTimestamp
         self.snakes = []
         self.points = []
-        for i in range(0, 50):
+        for i in range(0, NumberOfPoints):
             self.points.append((random.randint(0, self.width), random.randint(0, self.height)))
         self.obstacles = []
 
@@ -60,12 +61,14 @@ class Arena:
         p = self.__getPointByPosition__(point)
         if ((not s is None) and (not p is None)):
             self.points.remove(p)
+            self.points.append((random.randint(0, self.width), random.randint(0, self.height)))
 
             ratio = PointLength / s.tailLength()
             s.points[0] = (
                 s.points[0][X] - ratio * (s.points[1][X] - s.points[0][X]),
                 s.points[0][Y] - ratio * (s.points[1][Y] - s.points[0][Y])
             )
+
         self.update(newTimestamp)
 
     def toJSON(self):
