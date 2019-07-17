@@ -3,6 +3,7 @@ import socketio
 import arena
 import time
 from aiohttp import web
+import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 async def index(request):
@@ -30,12 +31,17 @@ async def disconnect_command (sid, arena):
 
 # -------------------------------------------------------------------
 
-def updateArena(sio, namespace, arena):
-    async def _updateArena():
-        arena.update(time.time())
-        await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
-    
-    return _updateArena
+async def periodicUpdateArena(sio, namespace, arena):
+    arena.update(time.time())
+    await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
+    await asyncio.sleep(0.1)
+    loop = asyncio.get_event_loop()
+    loop.create_task(periodicUpdateArena(sio, namespace, arena))
+
+async def updateArena(sio, namespace, arena):
+    arena.update(time.time())
+    await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
+
 
 async def shutdown(app):
     pass
@@ -58,7 +64,7 @@ def initSocketIO (app, namespace):
     @sio.on('command', namespace=namespace)
     async def command(sid, data):
         await globals()[data['command'] + '_command'](sid, app['arena'], data)
-        #await updateArena(sio, namespace, arena)
+        await updateArena(sio, namespace, app['arena'])
 
     return sio
 
@@ -77,9 +83,11 @@ def main():
     app['socketIO'] = initSocketIO(app, namespace)
     app.on_shutdown.append(shutdown)
 
-    sched = AsyncIOScheduler()
-    sched.add_job(updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 0.1)
-    sched.start()
+    '''sched = AsyncIOScheduler()
+    sched.add_job(_updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 0.1)
+    sched.start()'''
+    loop = asyncio.get_event_loop()
+    loop.create_task(periodicUpdateArena(app['socketIO'], namespace, app['arena']))
     web.run_app(app)
 
 
