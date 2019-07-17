@@ -21,9 +21,9 @@ function connectAsUser (socket, username) {
 function moveUserSnake(socket, keyEvent) {
     console.log("pressed", keyEvent.key);
     switch (keyEvent.key) {
-        case 'w': socket.emit('command', {'command':'snake_up'}); break;
+//        case 'w': socket.emit('command', {'command':'snake_up'}); break;
         case 'a': socket.emit('command', {'command':'snake_left'}); break;
-        case 's': socket.emit('command', {'command':'snake_down'}); break;
+//        case 's': socket.emit('command', {'command':'snake_down'}); break;
         case 'd': socket.emit('command', {'command':'snake_right'}); break;
         default:
     }
@@ -38,7 +38,6 @@ function drawSnakes(canvas, snakes) {
         var polyLine = new fabric.Polyline(points, {
             stroke: 'black',
             opacity: 0.25,
-    //		stroke: new fabric.Color("rgba(1,20,100,0.5)"),
             fill: '',
             strokeWidth: 5,
             strokeLineCap: 'round',
@@ -86,11 +85,12 @@ function initRx(canvas) {
 		connectAsUser(socket, username);
     });
 
-    const ups = rxjs.fromEvent(document, 'keydown').pipe(rxjs.operators.debounceTime(100));
+    const ups = rxjs.fromEvent(document, 'keydown').pipe(rxjs.operators.debounceTime(1));
     ups.subscribe(event => {
         console.log("KeyPressed", event);
         moveUserSnake(socket, event);
     });
+
 }
 
 // (0,0) is upper left corner, positive axis right and down
