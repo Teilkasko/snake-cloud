@@ -27,7 +27,13 @@ class Arena:
         return newSnake
 
     def addUser (self, id, username):
-        self.snakes.append(self.createNewSnake(id, username))
+        if (self.__getSnakeById__(id) is None):
+            self.snakes.append(self.createNewSnake(id, username))
+
+    def removeUser(self, id):
+        s = self.__getSnakeById__(id)
+        if (not s is None):
+            self.snakes.remove(s)
 
     def update(self, newTimestamp):
         elapsedTime = newTimestamp - self.timestamp
@@ -38,7 +44,7 @@ class Arena:
 
     def changeSnakeDirection(self, id, direction, newTimestamp):
         s = self.__getSnakeById__(id)
-        if (not (type(s) is None)):
+        if (not s is None):
             if (direction == 'right'):
                 s.direction = s.direction + 10
             elif (direction == 'left'):

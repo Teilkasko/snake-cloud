@@ -25,6 +25,9 @@ async def snake_right_command(sid, arena, data):
 async def snake_down_command(sid, arena, data):
     arena.changeSnakeDirection(sid, 'down', time.time())
 
+async def disconnect_command (sid, arena):
+    arena.removeUser(sid)
+
 # -------------------------------------------------------------------
 
 def updateArena(sio, namespace, arena):
@@ -50,6 +53,7 @@ def initSocketIO (app, namespace):
     @sio.on('disconnect', namespace=namespace)
     async def disconnect(sid):
         print("disconnect", sid)
+        await disconnect_command(sid, app['arena'])
 
     @sio.on('command', namespace=namespace)
     async def command(sid, data):
