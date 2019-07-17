@@ -3,6 +3,10 @@ import math
 import random
 import snake
 
+X = 0
+Y = 1
+PointLength = 5
+
 class Arena:
 
     def __init__(self, referenceTimestamp):
@@ -51,6 +55,18 @@ class Arena:
                 s.direction = s.direction - 10
         self.update(newTimestamp)
 
+    def eatPoint(self, id, point, newTimestamp):
+        s = self.__getSnakeById__(id)
+        p = self.__getPointByPosition__(point)
+        if ((not s is None) and (not p is None)):
+            self.points.remove(p)
+
+            ratio = PointLength / s.tailLength()
+            s.points[0] = (
+                s.points[0][X] - ratio * (s.points[1][X] - s.points[0][X]),
+                s.points[0][Y] - ratio * (s.points[1][Y] - s.points[0][Y])
+            )
+        self.update(newTimestamp)
 
     def toJSON(self):
         return {
@@ -64,4 +80,10 @@ class Arena:
         for s in self.snakes:
             if (s.id == id):
                 return s
+        return
+
+    def __getPointByPosition__(self, point):
+        for p in self.points:
+            if (point[X] == p[X] and point[Y] == p[Y]):
+                return p
         return
