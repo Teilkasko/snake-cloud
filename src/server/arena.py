@@ -86,6 +86,6 @@ class Arena:
 
     def __getPointByPosition__(self, point):
         for p in self.points:
-            if (point[X] <=(p[X] + 2) and point[X] >= (p[X] - 2) and point[Y] <= (p[Y] + 2) and point[Y] >= (p[Y] - 2)):
+            if (point[X] <=(p[X] + 5) and point[X] >= (p[X] - 5) and point[Y] <= (p[Y] + 5) and point[Y] >= (p[Y] - 5)):
                 return p
         return
