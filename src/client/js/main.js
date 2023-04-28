@@ -29,6 +29,12 @@ function moveUserSnake(socket, keyEvent) {
     }
 }
 
+function showUsersConnected(snakes) {
+    var userHtml = ""
+    snakes.forEach(snake => userHtml += ("<li>" + snake.username + "</li>"))
+    document.getElementById("usersConnected").setHTML(userHtml)
+}
+
 function drawSnakes(canvas, snakes) {
     width = canvas.width;
     height = canvas.height;
@@ -76,6 +82,7 @@ function initRx(canvas) {
 		ctx.clearRect(0, 0, ctx.width, ctx.height);
 	    drawSnakes(canvas, event.snakes);
 		drawPoints(canvas, event.points);
+		showUsersConnected(event.snakes);
 	});
 
     const connectForm = document.getElementById("connectForm");

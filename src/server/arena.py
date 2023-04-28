@@ -35,6 +35,9 @@ class Arena:
         if (self.__getSnakeById__(id) is None):
             self.snakes.append(self.createNewSnake(id, username))
 
+        for snake in self.snakes:
+            print(snake.username)
+
     def removeUser(self, id):
         s = self.__getSnakeById__(id)
         if (not s is None):
