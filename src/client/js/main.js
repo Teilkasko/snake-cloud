@@ -30,9 +30,13 @@ function moveUserSnake(socket, keyEvent) {
 }
 
 function showUsersConnected(snakes) {
-    var userHtml = ""
-    snakes.forEach(snake => userHtml += ("<li>" + snake.username + "</li>"))
-    document.getElementById("usersConnected").setHTML(userHtml)
+    const userList = document.getElementById("usersConnected")
+    userList.innerText = ""
+    snakes.forEach(snake => {
+        const user = document.createElement("li")
+        user.innerText = snake.username
+        userList.appendChild(user)  
+    })
 }
 
 function drawSnakes(canvas, snakes) {
