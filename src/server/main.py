@@ -74,12 +74,24 @@ def main():
     logging.basicConfig(level=logging.ERROR)
     namespace = '/snake'
 
+    routes = web.RouteTableDef()
+
+    @routes.get('/healthCheck')
+    async def healthCheck(request):
+        status = 200 if app['arena'].getNumberOfPlayers() < 5 else 500
+        print("Got health check request")
+        return web.Response(status=status, text="ok")
+
     app = web.Application()
-    app.router.add_get('/', index)
-    app.router.add_static('/js', '../client/js')
-    app.router.add_static('/css', '../client/css')
 
     app['arena'] = arena.Arena(time.time())
+
+    app.router.add_get('/', index)
+    app.router.get('/healthCheck', lambda request: healthCheck(app['arena']))
+    app.router.add_static('/js', '../client/js')
+    app.router.add_static('/css', '../client/css')
+    app.add_routes(routes)
+
     app['socketIO'] = initSocketIO(app, namespace)
     app.on_shutdown.append(shutdown)
 

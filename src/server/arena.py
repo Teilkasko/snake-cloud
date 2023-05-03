@@ -81,6 +81,10 @@ class Arena:
             'obstacles': self.obstacles
         }
 
+    def getNumberOfPlayers(self):
+        return len(self.snakes)
+
+
     def __getSnakeById__(self, id):
         for s in self.snakes:
             if (s.id == id):
