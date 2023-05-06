@@ -78,9 +78,11 @@ def main():
 
     @routes.get('/healthCheck')
     async def healthCheck(request):
-        status = 200 if app['arena'].getNumberOfPlayers() < 5 else 500
-        print("Got health check request")
-        return web.Response(status=status, text="ok")
+        MAX_PLAYERS = 5
+        playerCount = app['arena'].getNumberOfPlayers()
+        status = 200 if playerCount < MAX_PLAYERS else 500
+        print("Health check: " + str(playerCount) + " players")
+        return web.Response(status=status, text=str(playerCount))
 
     app = web.Application()
 
