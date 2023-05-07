@@ -2,7 +2,7 @@
 Description=Startup Script
 
 [Service]
-ExecStart=/home/ec2-user/snake/aws-files/run-snake-server.sh
+ExecStart=/usr/local/bin/run-snake-server.sh
 
 [Install]
 WantedBy=multi-user.target
