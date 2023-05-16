@@ -1,4 +1,6 @@
 import logging
+import secrets
+
 import socketio
 import arena
 import time
@@ -34,6 +36,7 @@ async def disconnect_command (sid, arena):
 async def periodicUpdateArena(sio, namespace, arena):
     arena.update(time.time())
     await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
+    print("sent automatic update")
     await asyncio.sleep(0.1)
     loop = asyncio.get_event_loop()
     loop.create_task(periodicUpdateArena(sio, namespace, arena))
@@ -45,6 +48,30 @@ async def updateArena(sio, namespace, arena):
 
 async def shutdown(app):
     pass
+
+async def healthCheck(arena):
+    MAX_PLAYERS = 5
+    playerCount = arena.getNumberOfPlayers()
+    status = 200 if playerCount < MAX_PLAYERS else 500
+    print("Health check: " + str(playerCount) + " players")
+    return web.Response(status=status, text=str(playerCount))
+
+async def connectWithUsername(username, arena):
+    if not username:
+        return web.Response(text='Missing username parameter', status=400)
+
+    sid = secrets.token_urlsafe(16)
+    arena.addUser(sid, username)
+    print(f"connect {sid}")
+    return web.Response(text=f"{sid}")
+
+async def disconnectWithSessionID(sid, arena):
+    if not sid:
+        return web.Response(text='Missing sid parameter', status=400)
+
+    arena.removeUser(sid)
+    print(f"disconnect {sid}")
+    return web.Response(text=f"Remove user {sid}")
 
 # -------------------------------------------------------------------
 
@@ -74,36 +101,23 @@ def main():
     logging.basicConfig(level=logging.ERROR)
     namespace = '/snake'
 
-    routes = web.RouteTableDef()
-
-    @routes.get('/healthCheck')
-    async def healthCheck(request):
-        MAX_PLAYERS = 5
-        playerCount = app['arena'].getNumberOfPlayers()
-        status = 200 if playerCount < MAX_PLAYERS else 500
-        print("Health check: " + str(playerCount) + " players")
-        return web.Response(status=status, text=str(playerCount))
-
     app = web.Application()
 
     app['arena'] = arena.Arena(time.time())
 
     app.router.add_get('/', index)
-    app.router.get('/healthCheck', lambda request: healthCheck(app['arena']))
+    app.router.add_get('/connect', lambda request: connectWithUsername(request.query.get('username'), app['arena']))
+    app.router.add_get('/disconnect', lambda request: disconnectWithSessionID(request.query.get('sid'), app['arena']))
+    app.router.add_get('/healthCheck', lambda request: healthCheck(app['arena']))
     app.router.add_static('/js', '../client/js')
     app.router.add_static('/css', '../client/css')
-    app.add_routes(routes)
 
     app['socketIO'] = initSocketIO(app, namespace)
     app.on_shutdown.append(shutdown)
 
-    '''sched = AsyncIOScheduler()
-    sched.add_job(_updateArena(app['socketIO'], namespace, app['arena']), 'interval', seconds = 0.1)
-    sched.start()'''
     loop = asyncio.get_event_loop()
     loop.create_task(periodicUpdateArena(app['socketIO'], namespace, app['arena']))
     web.run_app(app)
-
 
 if __name__ == '__main__':
     main()
