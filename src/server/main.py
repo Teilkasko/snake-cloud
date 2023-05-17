@@ -8,8 +8,13 @@ from aiohttp import web
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-async def index(request):
-    return web.FileResponse('../client/index.html')
+
+async def index(request, arena):
+    if arena.getNumberOfPlayers() >= 10:
+        return web.Response(status=503, text="Too many players in the server")
+    else:
+        return web.FileResponse('../client/index.html')
+
 
 # -------------------------------------------------------------------
 
@@ -56,33 +61,16 @@ async def healthCheck(arena):
     print("Health check: " + str(playerCount) + " players")
     return web.Response(status=status, text=str(playerCount))
 
-async def connectWithUsername(username, arena):
-    if not username:
-        return web.Response(text='Missing username parameter', status=400)
-
-    sid = secrets.token_urlsafe(16)
-    arena.addUser(sid, username)
-    print(f"connect {sid}")
-    return web.Response(text=f"{sid}")
-
-async def disconnectWithSessionID(sid, arena):
-    if not sid:
-        return web.Response(text='Missing sid parameter', status=400)
-
-    arena.removeUser(sid)
-    print(f"disconnect {sid}")
-    return web.Response(text=f"Remove user {sid}")
 
 # -------------------------------------------------------------------
 
-def initSocketIO (app, namespace):
+def initSocketIO(app, namespace):
     sio = socketio.AsyncServer(async_mode='aiohttp')
     sio.attach(app)
 
     @sio.on('connect', namespace=namespace)
     def connect(sid, environ):
         print("connect", sid)
-
     @sio.on('disconnect', namespace=namespace)
     async def disconnect(sid):
         print("disconnect", sid)
@@ -95,6 +83,7 @@ def initSocketIO (app, namespace):
 
     return sio
 
+
 # -------------------------------------------------------------------
 
 def main():
@@ -105,9 +94,7 @@ def main():
 
     app['arena'] = arena.Arena(time.time())
 
-    app.router.add_get('/', index)
-    app.router.add_get('/connect', lambda request: connectWithUsername(request.query.get('username'), app['arena']))
-    app.router.add_get('/disconnect', lambda request: disconnectWithSessionID(request.query.get('sid'), app['arena']))
+    app.router.add_get('/', lambda request: index(request, app['arena']))
     app.router.add_get('/healthCheck', lambda request: healthCheck(app['arena']))
     app.router.add_static('/js', '../client/js')
     app.router.add_static('/css', '../client/css')
@@ -118,6 +105,7 @@ def main():
     loop = asyncio.get_event_loop()
     loop.create_task(periodicUpdateArena(app['socketIO'], namespace, app['arena']))
     web.run_app(app)
+
 
 if __name__ == '__main__':
     main()
