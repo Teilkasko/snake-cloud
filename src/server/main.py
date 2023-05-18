@@ -35,7 +35,7 @@ async def pushPlayerCountMetriData(numberOfPlayer):
     ]
 
     response = cloudwatch.put_metric_data(
-        Namespace="AWS/EC2",
+        Namespace="SNEK",
         MetricData=metric_data
     )
     print("CUSTOM METRIC RESPONSE: " + str(response))
