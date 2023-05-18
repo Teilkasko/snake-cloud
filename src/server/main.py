@@ -78,15 +78,12 @@ async def disconnect_command (sid, arena):
 
 async def periodicUpdateArena(sio, namespace, arena):
     while True:
-        arena.update(time.time())
-        await sio.emit('updates', data=arena.toJSON(), namespace=namespace)
-        # print("sent automatic update")
-        await asyncio.sleep(0.1)
+        await updateArena(sio, namespace, arena)
+        await asyncio.sleep(1)
 
 async def updateArena(sio, namespace, arena):
     arena.update(time.time())
     await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
-
 
 async def shutdown(sio, namespace):
     await sio.emit('issues', data={'message': "shutdown"}, skip_sid=True, namespace=namespace)
