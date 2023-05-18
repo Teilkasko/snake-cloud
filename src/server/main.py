@@ -16,9 +16,12 @@ cloudwatch = boto3.client('cloudwatch', aws_access_key_id='YOUR_ACCESS_KEY',
                           region_name='YOUR_REGION')  # TODO
 
 async def pushPlayerCountMetriData(numberOfPlayer):
+    instance_id = boto3.client('ec2').describe_instances()['Reservations'][0]['Instances'][0]['InstanceId']
+
     metric_data = [
         {
             'MetricName': "PlayerCount",
+            'Dimensions': [{'Name': 'InstanceId', 'Value': instance_id}],
             'Timestamp': datetime.datetime.utcnow(),
             'Value': numberOfPlayer,
             'Unit': 'Count'
@@ -29,7 +32,7 @@ async def pushPlayerCountMetriData(numberOfPlayer):
         Namespace="AWS/EC2",
         MetricData=metric_data
     )
-    print("CUSTOM METRIC RESPONSE: " + response)
+    print("CUSTOM METRIC RESPONSE: " + str(response))
 
 async def index(request, arena):
     if arena.getNumberOfPlayers() >= MAX_NUMBER_OF_PLAYER:
