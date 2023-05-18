@@ -1,5 +1,6 @@
 import logging
 import boto3
+from ec2_metadata import ec2_metadata
 import datetime
 
 import socketio
@@ -11,10 +12,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 MAX_NUMBER_OF_PLAYER = 10
 
-cloudwatch = boto3.client('cloudwatch')
-
 async def pushPlayerCountMetriData(numberOfPlayer):
-    instance_id = boto3.client('ec2').describe_instances()['Reservations'][0]['Instances'][0]['InstanceId']
+    instance_id = ec2_metadata.instance_id
 
     metric_data = [
         {
@@ -33,7 +32,7 @@ async def pushPlayerCountMetriData(numberOfPlayer):
         }
     ]
 
-    response = cloudwatch.put_metric_data(
+    response = boto3.client('cloudwatch').put_metric_data(
         Namespace="SNEK",
         MetricData=metric_data
     )
@@ -102,7 +101,7 @@ def initSocketIO(app, namespace):
     sio.attach(app)
 
     @sio.on('connect', namespace=namespace)
-    def connect(sid, environ):
+    def connect(sid, data):
         print("connect", sid)
 
     @sio.on('disconnect', namespace=namespace)
@@ -131,9 +130,9 @@ def main():
 
     app['arena'] = arena.Arena(time.time())
 
-    app.router.add_get('/', lambda request: index(request, app['arena']))
+    app.router.add_get('/',            lambda request: index(request, app['arena']))
     app.router.add_get('/healthCheck', lambda request: healthCheck(app['arena']))
-    app.router.add_static('/js', '../client/js')
+    app.router.add_static('/js',  '../client/js')
     app.router.add_static('/css', '../client/css')
 
     app['socketIO'] = initSocketIO(app, namespace)
