@@ -11,12 +11,18 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 MAX_NUMBER_OF_PLAYER = 10
 
-cloudwatch = boto3.client('cloudwatch', aws_access_key_id='YOUR_ACCESS_KEY',
-                          aws_secret_access_key='YOUR_SECRET_KEY',
-                          region_name='YOUR_REGION')  # TODO
+ACCESS_KEY = ""
+SECRET_KEY = ""
+REGION = 'eu-central-1'
+
+cloudwatch = boto3.client('cloudwatch', aws_access_key_id=ACCESS_KEY,
+                          aws_secret_access_key=SECRET_KEY,
+                          region_name=REGION)
 
 async def pushPlayerCountMetriData(numberOfPlayer):
-    instance_id = boto3.client('ec2').describe_instances()['Reservations'][0]['Instances'][0]['InstanceId']
+    instance_id = boto3.client('ec2', aws_access_key_id=ACCESS_KEY,
+                               aws_secret_access_key=SECRET_KEY,
+                               region_name=REGION).describe_instances()['Reservations'][0]['Instances'][0]['InstanceId']
 
     metric_data = [
         {
