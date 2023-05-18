@@ -23,6 +23,13 @@ async def pushPlayerCountMetriData(numberOfPlayer):
             'Timestamp': datetime.datetime.utcnow(),
             'Value': numberOfPlayer,
             'Unit': 'Count'
+        },
+        {
+            'MetricName': "PlayerPercentage",
+            'Dimensions': [{'Name': 'InstanceId', 'Value': instance_id}],
+            'Timestamp': datetime.datetime.utcnow(),
+            'Value': numberOfPlayer/MAX_NUMBER_OF_PLAYER*100,
+            'Unit': 'Percent'
         }
     ]
 
