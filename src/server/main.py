@@ -1,5 +1,6 @@
 import logging
-import secrets
+import boto3
+import datetime
 
 import socketio
 import arena
@@ -9,6 +10,26 @@ import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 MAX_NUMBER_OF_PLAYER = 10
+
+cloudwatch = boto3.client('cloudwatch', aws_access_key_id='YOUR_ACCESS_KEY',
+                          aws_secret_access_key='YOUR_SECRET_KEY',
+                          region_name='YOUR_REGION')  # TODO
+
+async def pushPlayerCountMetriData(numberOfPlayer):
+    metric_data = [
+        {
+            'MetricName': "PlayerCount",
+            'Timestamp': datetime.datetime.utcnow(),
+            'Value': numberOfPlayer,
+            'Unit': 'Count'
+        }
+    ]
+
+    response = cloudwatch.put_metric_data(
+        Namespace="AWS/EC2",
+        MetricData=metric_data
+    )
+    print("CUSTOM METRIC RESPONSE: " + response)
 
 async def index(request, arena):
     if arena.getNumberOfPlayers() >= MAX_NUMBER_OF_PLAYER:
@@ -21,6 +42,8 @@ async def index(request, arena):
 
 async def connect_command (sid, arena, data):
     arena.addUser(sid, data['username'])
+    await pushPlayerCountMetriData(arena.getNumberOfPlayers())
+
 
 async def snake_up_command(sid, arena, data):
     arena.changeSnakeDirection(sid, 'up', time.time())
@@ -36,6 +59,7 @@ async def snake_down_command(sid, arena, data):
 
 async def disconnect_command (sid, arena):
     arena.removeUser(sid)
+    await pushPlayerCountMetriData(arena.getNumberOfPlayers())
 
 # -------------------------------------------------------------------
 
