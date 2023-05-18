@@ -44,7 +44,7 @@ async def pushPlayerCountMetricData(numberOfPlayer):
     ]
 
     response = boto3.client('cloudwatch').put_metric_data(
-        Namespace="SNEK",
+        Namespace="Snake",
         MetricData=metric_data
     )
     # print("CUSTOM METRIC RESPONSE: " + str(response))
