@@ -21,7 +21,10 @@ async def pushPlayerCountMetricData(numberOfPlayer):
     metric_data = [
         {
             'MetricName': "PlayerCount",
-            'Dimensions': [{'Name': 'InstanceId', 'Value': instance_id}],
+            'Dimensions': [
+                {'Name': 'InstanceId', 'Value': instance_id},
+                {'Name': 'AutoScalingGroupName', 'Value': 'snake-asg'}
+            ],
             'Timestamp': datetime.datetime.utcnow(),
             'Value': numberOfPlayer,
             'Unit': 'Count',
@@ -29,7 +32,10 @@ async def pushPlayerCountMetricData(numberOfPlayer):
         },
         {
             'MetricName': "PlayerPercentage",
-            'Dimensions': [{'Name': 'InstanceId', 'Value': instance_id}],
+            'Dimensions': [
+                {'Name': 'InstanceId', 'Value': instance_id},
+                {'Name': 'AutoScalingGroupName', 'Value': 'snake-asg'}
+            ],
             'Timestamp': datetime.datetime.utcnow(),
             'Value': numberOfPlayer/MAX_NUMBER_OF_PLAYER*100,
             'Unit': 'Percent',
