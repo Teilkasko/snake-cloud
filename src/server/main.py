@@ -8,10 +8,11 @@ from aiohttp import web
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+MAX_NUMBER_OF_PLAYER = 2
 
 async def index(request, arena):
-    if arena.getNumberOfPlayers() >= 10:
-        return web.Response(status=503, text="Too many players in the server")
+    if arena.getNumberOfPlayers() >= MAX_NUMBER_OF_PLAYER:
+        return web.Response(status=503, text="Too many players in the server, please try again in a few moments")
     else:
         return web.FileResponse('../client/index.html')
 
@@ -51,7 +52,8 @@ async def updateArena(sio, namespace, arena):
     await sio.emit('updates', data=arena.toJSON(), skip_sid=True, namespace=namespace)
 
 
-async def shutdown(app):
+async def shutdown(sio, namespace):
+    await sio.emit('issues', data={'message': "shutdown"}, skip_sid=True, namespace=namespace)
     pass
 
 async def healthCheck(arena):
@@ -71,6 +73,7 @@ def initSocketIO(app, namespace):
     @sio.on('connect', namespace=namespace)
     def connect(sid, environ):
         print("connect", sid)
+
     @sio.on('disconnect', namespace=namespace)
     async def disconnect(sid):
         print("disconnect", sid)
@@ -78,6 +81,10 @@ def initSocketIO(app, namespace):
 
     @sio.on('command', namespace=namespace)
     async def command(sid, data):
+        if data['command'] == "connect" and app['arena'].getNumberOfPlayers() >= MAX_NUMBER_OF_PLAYER:
+            print("Too many players while page already loaded")
+            await sio.emit('issues', data={"message": "reload"}, skip_sid=True, namespace=namespace, room=sid)
+            return
         await globals()[data['command'] + '_command'](sid, app['arena'], data)
         await updateArena(sio, namespace, app['arena'])
 
@@ -100,7 +107,7 @@ def main():
     app.router.add_static('/css', '../client/css')
 
     app['socketIO'] = initSocketIO(app, namespace)
-    app.on_shutdown.append(shutdown)
+    app.on_shutdown.append(lambda value: shutdown(app['socketIO'], namespace))
 
     loop = asyncio.get_event_loop()
     loop.create_task(periodicUpdateArena(app['socketIO'], namespace, app['arena']))

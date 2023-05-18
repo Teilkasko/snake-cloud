@@ -76,6 +76,15 @@ function initRx(canvas) {
 
     const namespace = '/snake';
     const socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+    const issues = rxFromIO(socket, 'issues');
+    issues.subscribe(event => {
+        if(event.message == "reload") {
+	        location.reload();
+	    }
+	    if(event.message == "shutdown") {
+            alert("The server is shutting down, please reload the page to connect to a new one")
+	    }
+    })
     const updates = rxFromIO(socket, 'updates');
 	updates.subscribe(event => {
 		console.log("UPDATES", event);
