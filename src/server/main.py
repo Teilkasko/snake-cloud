@@ -41,7 +41,7 @@ async def pushPlayerCountMetricData(numberOfPlayer):
         Namespace="SNEK",
         MetricData=metric_data
     )
-    print("CUSTOM METRIC RESPONSE: " + str(response))
+    # print("CUSTOM METRIC RESPONSE: " + str(response))
 
 
 # -------------------------------------------------------------------
@@ -80,7 +80,7 @@ async def periodicUpdateArena(sio, namespace, arena):
     while True:
         arena.update(time.time())
         await sio.emit('updates', data=arena.toJSON(), namespace=namespace)
-        print("sent automatic update")
+        # print("sent automatic update")
         await asyncio.sleep(0.1)
 
 async def updateArena(sio, namespace, arena):
