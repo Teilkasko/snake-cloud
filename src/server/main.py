@@ -8,7 +8,7 @@ from aiohttp import web
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-MAX_NUMBER_OF_PLAYER = 2
+MAX_NUMBER_OF_PLAYER = 10
 
 async def index(request, arena):
     if arena.getNumberOfPlayers() >= MAX_NUMBER_OF_PLAYER:
@@ -82,7 +82,6 @@ def initSocketIO(app, namespace):
     @sio.on('command', namespace=namespace)
     async def command(sid, data):
         if data['command'] == "connect" and app['arena'].getNumberOfPlayers() >= MAX_NUMBER_OF_PLAYER:
-            print("Too many players while page already loaded")
             await sio.emit('issues', data={"message": "reload"}, skip_sid=True, namespace=namespace, room=sid)
             return
         await globals()[data['command'] + '_command'](sid, app['arena'], data)

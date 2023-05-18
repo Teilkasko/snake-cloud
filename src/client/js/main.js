@@ -82,7 +82,7 @@ function initRx(canvas) {
 	        location.reload();
 	    }
 	    if(event.message == "shutdown") {
-            alert("The server is shutting down, please reload the page to connect to a new one")
+            alert("This server is shutting down, please reload the page to connect to another one")
 	    }
     })
     const updates = rxFromIO(socket, 'updates');
