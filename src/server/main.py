@@ -84,9 +84,8 @@ async def shutdown(sio, namespace):
     pass
 
 async def healthCheck(arena):
-    MAX_PLAYERS = 5
     playerCount = arena.getNumberOfPlayers()
-    status = 200 if playerCount < MAX_PLAYERS else 500
+    status = 200 if playerCount < MAX_NUMBER_OF_PLAYER else 500
     print("Health check: " + str(playerCount) + " players")
     return web.Response(status=status, text=str(playerCount))
 
