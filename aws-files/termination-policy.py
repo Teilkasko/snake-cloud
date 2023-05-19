@@ -21,7 +21,7 @@ def lambda_handler(event, context):
         # Query the CloudWatch metric for the current instance ID
         response = boto3.client('cloudwatch').get_metric_statistics(
             Namespace='Snake',
-            MetricName='PlayerPercentage',
+            MetricName='PlayerCount',
             Dimensions=[
                 {
                     'Name':  'InstanceId',
@@ -34,18 +34,20 @@ def lambda_handler(event, context):
             ],
             StartTime=now-datetime.timedelta(seconds=30),
             EndTime=now,
-            Period=1
+            Period=1,
+            Statistics=['Average']
         )
 
         # Check if the metric data exists and retrieve the average metric value
         datapoints = response['Datapoints']
-        if datapoints:
-            metric_value = datapoints[0]['PlayerPercentage']
+        datapoints_sorted = sorted(datapoints, key=lambda x: x['Timestamp'], reverse=True)
+        
+        metric_value = datapoints_sorted[0]['Average']
 
-            # Update the minimum metric value and corresponding instance ID if necessary
-            if metric_value < min_metric_value:
-                min_metric_value = metric_value
-                min_metric_instance_id = instance_id
+        # Update the minimum metric value and corresponding instance ID if necessary
+        if metric_value < min_metric_value:
+            min_metric_value = metric_value
+            min_metric_instance_id = instance_id
 
 
     # Create the JSON structure
