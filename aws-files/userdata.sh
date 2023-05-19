@@ -8,7 +8,7 @@ sudo -u ec2-user pip3 install virtualenv
 
 # Clone project and set up project dependencies
 cd /home/ec2-user
-git clone --branch develop https://github.com/fsolaroli/SnAkE.git snake
+git clone --branch master https://github.com/fsolaroli/SnAkE.git snake
 cd snake/
 virtualenv .
 chown -R ec2-user:ec2-user .
