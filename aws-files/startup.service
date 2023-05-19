@@ -1,0 +1,8 @@
+[Unit]
+Description=Startup Script
+
+[Service]
+ExecStart=/usr/local/bin/run-snake-server.sh
+
+[Install]
+WantedBy=multi-user.target

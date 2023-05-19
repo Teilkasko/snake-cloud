@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>SnAkE</title>
+    <!-- script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script -->
+<!--    <script type="text/javascript" src="./js/socket.io.2.2.0.js"></script>-->
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="./js/fabric.3.2.0.js"></script>
+    <script type="text/javascript" src="./js/rxjs.6.5.2.js"></script>
+    <script type="text/javascript" src="./js/main.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="./css/main.css">
+</head>
+<body>
+<h1>SnAkE</h1>
+<div id="login">
+    <form id="connectForm" onsubmit="return false;">
+      <input id="username" type="text" name="username"/>
+      <input id="connect" type="submit" value="Connect"/>
+    </form>
+</div>
+<canvas id="arena"></canvas>
+<div>
+    Connected users: 
+    <ul id="usersConnected"></ul>
+</div>
+</body>
+</html>
