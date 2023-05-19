@@ -1,14 +1,3 @@
-function rxFromIO (io, eventName) {
-    return rxjs.Observable.create(observer => {
-        io.on (eventName, (data) => {
-            observer.next(data)
-        });
-        return {
-            dispose : io.close
-        }
-    });
-}
-
 function connectionId (socket) {
 	return socket.id.split('#')[1];
 }
@@ -21,9 +10,7 @@ function connectAsUser (socket, username) {
 function moveUserSnake(socket, keyEvent) {
     console.log("pressed", keyEvent.key);
     switch (keyEvent.key) {
-//        case 'w': socket.emit('command', {'command':'snake_up'}); break;
         case 'a': socket.emit('command', {'command':'snake_left'}); break;
-//        case 's': socket.emit('command', {'command':'snake_down'}); break;
         case 'd': socket.emit('command', {'command':'snake_right'}); break;
         default:
     }
@@ -76,8 +63,8 @@ function initRx(canvas) {
 
     const namespace = '/snake';
     const socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-    const issues = rxFromIO(socket, 'issues');
-    issues.subscribe(event => {
+
+    socket.on("issues", (event) => {
         if(event.message == "reload") {
 	        location.reload();
 	    }
@@ -85,9 +72,9 @@ function initRx(canvas) {
             alert("This server is shutting down, please reload the page to connect to another one")
 	    }
     })
-    const updates = rxFromIO(socket, 'updates');
-	updates.subscribe(event => {
-		console.log("UPDATES", event);
+
+    socket.on("updates", (event) => {
+        console.log("UPDATES", event);
 		canvas.getObjects().forEach(o => {
 		    canvas.remove(o);
 		});
@@ -96,7 +83,7 @@ function initRx(canvas) {
 	    drawSnakes(canvas, event.snakes);
 		drawPoints(canvas, event.points);
 		showUsersConnected(event.snakes);
-	});
+    })
 
     const connectForm = document.getElementById("connectForm");
     const connect = rxjs.fromEvent(connectForm, 'submit');
@@ -107,7 +94,7 @@ function initRx(canvas) {
 
     const ups = rxjs.fromEvent(document, 'keydown').pipe(rxjs.operators.debounceTime(1));
     ups.subscribe(event => {
-        console.log("KeyPressed", event);
+//        console.log("KeyPressed", event);
         moveUserSnake(socket, event);
     });
 
