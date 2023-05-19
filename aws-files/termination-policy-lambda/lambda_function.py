@@ -1,24 +1,17 @@
 import boto3
-import json
 import datetime
 
 def lambda_handler(event, context):
-    # Extract relevant information from the input event
-    data = json.loads(event)
+    instances = event.get('Instances')
 
-    instances = event['Instances']
-
-    # Initialize variables to keep track of the minimum metric value and its corresponding instance ID
     min_metric_value = float('inf')
     min_metric_instance_id = None
 
     now = datetime.datetime.utcnow()
 
-    # Iterate over each instance in the input event
     for instance in instances:
         instance_id = instance['InstanceId']
 
-        # Query the CloudWatch metric for the current instance ID
         response = boto3.client('cloudwatch').get_metric_statistics(
             Namespace='Snake',
             MetricName='PlayerCount',
@@ -38,23 +31,19 @@ def lambda_handler(event, context):
             Statistics=['Average']
         )
 
-        # Check if the metric data exists and retrieve the average metric value
         datapoints = response['Datapoints']
         datapoints_sorted = sorted(datapoints, key=lambda x: x['Timestamp'], reverse=True)
         
         metric_value = datapoints_sorted[0]['Average']
 
-        # Update the minimum metric value and corresponding instance ID if necessary
         if metric_value < min_metric_value:
             min_metric_value = metric_value
             min_metric_instance_id = instance_id
 
+    print("Minimum metric instance id: ", min_metric_instance_id)
 
-    # Create the JSON structure
     json_data = {
         "InstanceIDs": [min_metric_instance_id]
     }
 
-
-    # Return the instance ID with the lowest metric value
-    return json.dumps(json_data, indent=4)
+    return json_data
