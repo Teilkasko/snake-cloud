@@ -1,6 +1,6 @@
 # SnAkE
 
-Project handled with 'virtualevn'
+Project handled with 'virtualenv'
 
 Basic steps to install 'virtualenv'
 
@@ -10,14 +10,6 @@ Basic steps to install 'virtualenv'
     > virtualenv --python=<path to python3>/python3 .
     > source ./bin/activate
     > pip3 install -r requirements.txt
-    …
-    > deactivate
+    > cd src/server
+    > python3 main.py
 
-
-    > pip freeze > requirements.txt
-
-
-### Current Python Version
-
-$ python --version
-Python 3.7
