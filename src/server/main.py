@@ -8,7 +8,9 @@ from aiohttp import web
 import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from aiohttp import BasicAuth
+import base64
+import binascii
+from aiohttp.web import middleware
 
 MAX_NUMBER_OF_PLAYER = 10
 
@@ -89,20 +91,27 @@ def initSocketIO(app, namespace):
 
     return sio
 
-async def auth_middleware(app, handler):
-    async def middleware_handler(request):
-        if request.path == '/':
-            auth = request.headers.get('Authorization')
-            if auth is None:
-                return web.Response(status=401, headers={'WWW-Authenticate': 'Basic realm="SnAkE"'})
-            try:
-                username, password = BasicAuth.decode(auth)
-                if username != 'admin' or password != 'password':
-                    return web.Response(status=403, text='Forbidden')
-            except ValueError:
+@middleware
+async def auth_middleware(request, handler):
+    if request.path == '/':
+        auth_header = request.headers.get('Authorization')
+        if auth_header is None:
+            return web.Response(status=401, headers={'WWW-Authenticate': 'Basic realm="SnAkE"'})
+        
+        try:
+            auth_type, auth_info = auth_header.split(' ', 1)
+            if auth_type.lower() != 'basic':
                 return web.Response(status=400, text='Bad Request')
-        return await handler(request)
-    return middleware_handler
+
+            decoded = base64.b64decode(auth_info).decode('utf-8')
+            username, password = decoded.split(':', 1)
+            
+            if username != 'admin' or password != 'password':
+                return web.Response(status=403, text='Forbidden')
+        except (ValueError, TypeError, binascii.Error):
+            return web.Response(status=400, text='Bad Request')
+    
+    return await handler(request)
 
 # -------------------------------------------------------------------
 
