@@ -8,6 +8,7 @@ from aiohttp import web
 import asyncio
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from aiohttp import BasicAuth
 
 MAX_NUMBER_OF_PLAYER = 10
 
@@ -88,6 +89,20 @@ def initSocketIO(app, namespace):
 
     return sio
 
+async def auth_middleware(app, handler):
+    async def middleware_handler(request):
+        if request.path == '/':
+            auth = request.headers.get('Authorization')
+            if auth is None:
+                return web.Response(status=401, headers={'WWW-Authenticate': 'Basic realm="SnAkE"'})
+            try:
+                username, password = BasicAuth.decode(auth)
+                if username != 'admin' or password != 'password':
+                    return web.Response(status=403, text='Forbidden')
+            except ValueError:
+                return web.Response(status=400, text='Bad Request')
+        return await handler(request)
+    return middleware_handler
 
 # -------------------------------------------------------------------
 
@@ -102,7 +117,7 @@ def main():
     logging.basicConfig(level=logging.ERROR)
     namespace = '/snake'
 
-    app = web.Application()
+    app = web.Application(middlewares=[auth_middleware])
 
     app['arena'] = arena.Arena(time.time())
 
