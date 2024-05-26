@@ -1,10 +1,6 @@
 import logging
 import threading
 
-import boto3
-from ec2_metadata import ec2_metadata
-import datetime
-
 import socketio
 import arena
 import time
@@ -14,41 +10,6 @@ import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 MAX_NUMBER_OF_PLAYER = 10
-
-async def pushPlayerCountMetricData(numberOfPlayer):
-    instance_id = ec2_metadata.instance_id
-
-    metric_data = [
-        {
-            'MetricName': "PlayerCount",
-            'Dimensions': [
-                {'Name': 'InstanceId', 'Value': instance_id},
-                {'Name': 'AutoScalingGroupName', 'Value': 'snake-asg'}
-            ],
-            'Timestamp': datetime.datetime.utcnow(),
-            'Value': numberOfPlayer,
-            'Unit': 'Count',
-            'StorageResolution': 1
-        },
-        {
-            'MetricName': "PlayerPercentage",
-            'Dimensions': [
-                {'Name': 'InstanceId', 'Value': instance_id},
-                {'Name': 'AutoScalingGroupName', 'Value': 'snake-asg'}
-            ],
-            'Timestamp': datetime.datetime.utcnow(),
-            'Value': numberOfPlayer/MAX_NUMBER_OF_PLAYER*100,
-            'Unit': 'Percent',
-            'StorageResolution': 1
-        }
-    ]
-
-    response = boto3.client('cloudwatch').put_metric_data(
-        Namespace="Snake",
-        MetricData=metric_data
-    )
-    # print("CUSTOM METRIC RESPONSE: " + str(response))
-
 
 # -------------------------------------------------------------------
 
@@ -104,11 +65,6 @@ async def healthCheck(arena):
 
 # -------------------------------------------------------------------
 
-async def periodicSendCustomMetrics(arena):
-    while True:
-        await pushPlayerCountMetricData(arena.getNumberOfPlayers())
-        await asyncio.sleep(10)
-
 def initSocketIO(app, namespace):
     sio = socketio.AsyncServer(async_mode='aiohttp')
     sio.attach(app)
@@ -138,9 +94,7 @@ def initSocketIO(app, namespace):
 def between_callback(app, namespace):
     loop = asyncio.new_event_loop()
     updateTask = loop.create_task(periodicUpdateArena(app['socketIO'], namespace, app['arena']))
-    customMetricTask = loop.create_task(periodicSendCustomMetrics(app['arena']))
 
-    loop.run_until_complete(customMetricTask)
     loop.run_until_complete(updateTask)
     loop.close()
 
